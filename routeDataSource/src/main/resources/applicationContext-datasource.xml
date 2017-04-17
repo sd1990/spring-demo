@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+
+       ">
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations" value="classpath*:datasource.properties"/>
+    </bean>
+
+
+    <!--<bean id="abstractXADataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean"
+          init-method="init" destroy-method="close" abstract="true">
+           <property name="xaDataSourceClassName" value="${jdbc.xaDataSourceClassName}"/>
+        &lt;!&ndash; SQLErrorCodes loaded: [DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase, Hana]  &ndash;&gt;
+
+           <property name="poolSize" value="10" />
+
+           <property name="minPoolSize" value="10"/>
+           <property name="maxPoolSize" value="30"/>
+           <property name="borrowConnectionTimeout" value="60"/>
+           <property name="reapTimeout" value="20"/>
+           <property name="maxIdleTime" value="60"/>
+           <property name="maintenanceInterval" value="60"/>
+           <property name="loginTimeout" value="60"/>
+           <property name="testQuery" value="${validationQuery}"/>
+    </bean>
+
+ <bean id="goodsDataSource" parent="abstractXADataSource">
+     <property name="uniqueResourceName" value="goodsDataSource" />
+     <property name="xaProperties">
+         <props>
+             <prop key="driverClassName">${jdbc.driver}</prop>
+             <prop key="url">${goodsDataSource.url}</prop>
+             <prop key="password">${goodsDataSource.password}</prop>
+             &lt;!&ndash;  <prop key="user">${jdbc.username}</prop> &ndash;&gt; &lt;!&ndash; mysql &ndash;&gt;
+             <prop key="username">${goodsDataSource.username}</prop>   &lt;!&ndash; durid &ndash;&gt;
+             <prop key="initialSize">0</prop>
+             <prop key="maxActive">20</prop> &lt;!&ndash; 若不配置则代码执行"{dataSource-1} inited"此处停止  &ndash;&gt;
+             <prop key="minIdle">0</prop>
+             <prop key="maxWait">60000</prop>
+             <prop key="validationQuery">${validationQuery}</prop>
+             <prop key="testOnBorrow">false</prop>
+             <prop key="testOnReturn">false</prop>
+             <prop key="testWhileIdle">true</prop>
+             <prop key="removeAbandoned">true</prop>
+             <prop key="removeAbandonedTimeout">1800</prop>
+             <prop key="logAbandoned">true</prop>
+             <prop key="filters">mergeStat</prop>
+         </props>
+     </property>
+ </bean>
+
+ <bean id="customerDataSource" parent="abstractXADataSource">
+     <property name="uniqueResourceName" value="customerDataSource" />
+     <property name="xaProperties">
+         <props>
+             <prop key="driverClassName">${jdbc.driver}</prop>
+             <prop key="url">${customerDataSource.url}</prop>
+             <prop key="password">${customerDataSource.password}</prop>
+             &lt;!&ndash;  <prop key="user">${jdbc.username}</prop> &ndash;&gt;
+             <prop key="username">${customerDataSource.username}</prop>
+             <prop key="initialSize">0</prop>
+             <prop key="maxActive">20</prop>
+             <prop key="minIdle">0</prop>
+             <prop key="maxWait">60000</prop>
+             <prop key="validationQuery">${validationQuery}</prop>
+             <prop key="testOnBorrow">false</prop>
+             <prop key="testOnReturn">false</prop>
+             <prop key="testWhileIdle">true</prop>
+             <prop key="removeAbandoned">true</prop>
+             <prop key="removeAbandonedTimeout">1800</prop>
+             <prop key="logAbandoned">true</prop>
+             <prop key="filters">mergeStat</prop>
+         </props>
+     </property>
+ </bean>-->
+
+    <bean id="parentDataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="false">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="initialSize" value="1"/>
+        <property name="maxActive" value="50"/>
+        <property name="maxWait" value="30000"/>
+        <property name="filters" value="stat,wall"/>
+        <property name="timeBetweenEvictionRunsMillis" value="3000"/>
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <property name="validationQuery" value="SELECT 'x'"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+        <property name="poolPreparedStatements" value="true"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20"/>
+    </bean>
+
+    <bean id="goodsDataSource" class="com.alibaba.druid.pool.DruidDataSource" parent="parentDataSource">
+        <property name="url" value="${goodsDataSource.url}"/>
+        <property name="username" value="${goodsDataSource.username}"/>
+        <property name="password" value="${goodsDataSource.password}"/>
+    </bean>
+    <bean id="customerDataSource" class="com.alibaba.druid.pool.DruidDataSource" parent="parentDataSource">
+        <property name="url" value="${customerDataSource.url}"/>
+        <property name="username" value="${customerDataSource.username}"/>
+        <property name="password" value="${customerDataSource.password}"/>
+    </bean>
+
+    <bean id="goodsJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="routeDataSource"/>
+    </bean>
+
+    <bean id="customerJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="routeDataSource"/>
+    </bean>
+
+    <!--这是一种错误的示范，RouteDataSource下面管理的dataSource应该是角色相同的，很适合数据库集群，做负载均衡。如果业务模块对应的数据源不相同，首先代码需要知道要访问哪个数据源，这势必产生了耦合；其次在事务管理中，如果AService的传播机制是Required或者Supports，那么如果之前的事务的connection是一个与AService操作的数据源不相同，由于事务管理机制不会为AService新建connection，那么AService操作的数据源就变成了传过来的事务中connection关联的数据源，那么就会出现数据问题-->
+    <bean id="routeDataSource" class="org.songdan.datasource.CustomRouterDataSource">
+        <property name="defaultTargetDataSource" ref="customerDataSource"/>
+        <property name="targetDataSources">
+            <map key-type="org.songdan.datasource.DataSources">
+                <entry key="CUSTOMER" value-ref="customerDataSource"/>
+                <entry key="GOODS" value-ref="goodsDataSource"/>
+            </map>
+        </property>
+    </bean>
+
+</beans>

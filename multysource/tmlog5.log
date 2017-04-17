@@ -1,0 +1,1 @@
+{"id":"172.16.2.81.tm149240054652100001","wasCommitted":false,"participants":[{"uri":"172.16.2.81.tm1","state":"TERMINATED","expires":1492400846634,"resourceName":"customerDataSource"},{"uri":"172.16.2.81.tm2","state":"TERMINATED","expires":1492400846634,"resourceName":"goodsDataSource"}]}

@@ -26,7 +26,7 @@ public class ShopServiceImplTest extends JunitBase {
 
     @Test
     public void testShopping() throws Exception {
-        String customerId = "000002";
+        String customerId = "000001";
         Customer customer = customerService.getCustomerById(customerId);
         String goodsId = "g0000002";
         Goods dbGoods = goodsService.getById(goodsId);
