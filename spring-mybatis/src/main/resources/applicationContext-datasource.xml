@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+
+       ">
+
+    <bean id="datasource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="false">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/wm?useUnicode=true&amp;characterEncoding=utf-8"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+        <property name="initialSize" value="1"/>
+        <property name="maxActive" value="50"/>
+        <property name="maxWait" value="30000"/>
+        <property name="filters" value="stat,wall"/>
+        <property name="timeBetweenEvictionRunsMillis" value="3000"/>
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <property name="validationQuery" value="SELECT 'x'"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+        <property name="poolPreparedStatements" value="true"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20"/>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="datasource"/>
+        <!-- 配置mybatis配置文件的位置 -->
+        <property name="configLocation" value="classpath:mybatis/config/mybatis-config.xml"/>
+        <!-- 配置扫描Mapper XML的位置,如果没有的可以删除,Mapper XML的暂时不支持 -->
+        <property name="mapperLocations" value="classpath*:mybatis/mapper/*.xml"/>
+        <property name="plugins">
+            <array>
+                <bean name="masterSlaveHelper" class="org.songdan.spring.mybatis.interceptor.OriginBizFeeResultInterceptor"/>
+            </array>
+        </property>
+    </bean>
+
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg ref="sqlSessionFactory"/>
+    </bean>
+    <!-- 配置扫描Mapper接口的包路径 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 如果是多个包名可用",; \t\n"中任意符号分隔开，详见：MapperScannerConfigurer[269行] -->
+        <property name="basePackage"
+                  value="org.songdan.spring.mybatis.dao"/>
+        <property name="sqlSessionTemplateBeanName" value="sqlSessionTemplate"/>
+    </bean>
+
+</beans>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.songdan.spring.mybatis.dao.FeeMapper">
+    <resultMap type="org.songdan.spring.mybatis.po.BizFee" id="BaseResultMap">
+        <result property="id" column="id" />
+        <result property="bizId" column="biz_id" />
+        <result property="mode" column="mode" />
+        <result property="data" column="data" typeHandler="org.songdan.spring.mybatis.typehandler.FeeTypeHandler"/>
+    </resultMap>
+
+    <select id="selectByBizId" resultType="org.songdan.spring.mybatis.po.BizOriginFee">
+        select  id,biz_id,mode,data
+        from biz_fee
+        where biz_id = #{bizId}
+    </select>
+
+    <insert id="insert" parameterType="org.songdan.spring.mybatis.po.BizOriginFee" >
+        insert  into origin_fee(biz_id,mode,data)
+        values
+        (#{bizId},
+        #{mode},
+        #{}
+        )
+    </insert>
+
+</mapper>
