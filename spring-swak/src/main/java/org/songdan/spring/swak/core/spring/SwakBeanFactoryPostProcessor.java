@@ -48,7 +48,7 @@ public class SwakBeanFactoryPostProcessor implements BeanDefinitionRegistryPostP
             BeanDefinition beanDefinition = registry.getBeanDefinition(beanDefinitionName);
             beanDefinitionMap.put(beanDefinition,beanDefinitionName);
             String beanClassName = beanDefinition.getBeanClassName();
-            Class<?> cls = null;
+            Class<?> cls;
             try {
                 cls = Class.forName(beanClassName);
             } catch (ClassNotFoundException e) {
@@ -73,13 +73,8 @@ public class SwakBeanFactoryPostProcessor implements BeanDefinitionRegistryPostP
             GenericBeanDefinition definition = new GenericBeanDefinition();
             definition.setBeanClass(SwakProxyFactoryBean.class);
             definition.getPropertyValues().add("proxyClass", entry.getKey().getName());
-            List<RuntimeBeanReference> beanReferenceList = entry.getValue().stream().map(new Function<BeanDefinition, RuntimeBeanReference>() {
-                @Override
-                public RuntimeBeanReference apply(BeanDefinition beanDefinition) {
-                    return new RuntimeBeanReference(beanDefinitionMap.get(beanDefinition));
-                }
-            }).collect(Collectors.toList());
-            definition.getPropertyValues().add("instancesReferenceList", beanReferenceList);
+            List<String> beanNameList = entry.getValue().stream().map(beanDefinitionMap::get).collect(Collectors.toList());
+            definition.getPropertyValues().add("instancesList", beanNameList);
             String simpleName = entry.getKey().getSimpleName();
             registry.registerBeanDefinition(simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1),definition);
         }

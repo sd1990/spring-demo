@@ -8,7 +8,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.RuntimeBeanReference;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -21,13 +20,11 @@ import java.util.*;
  * @author: Songdan
  * @create: 2020-03-28 22:13
  **/
-public class SwakProxyFactoryBean<T> implements FactoryBean<T>, InitializingBean, BeanFactoryAware {
+public class SwakProxyFactoryBean<T> implements FactoryBean<T>, InitializingBean,BeanFactoryAware {
 
     private Class<T> proxyClass;
 
-    private List<RuntimeBeanReference> instancesReferenceList;
-
-    private List<T> instancesList;
+    private List<String> instancesList;
 
     private Map<String, T> instanceMap;
 
@@ -47,7 +44,7 @@ public class SwakProxyFactoryBean<T> implements FactoryBean<T>, InitializingBean
                     return method.invoke(instancesList.get(0), args);
                 }
                 Set<String> tags = SwakSession.getTags();
-                List<T> targetList = new ArrayList<>(instancesReferenceList.size());
+                List<T> targetList = new ArrayList<>(instancesList.size());
                 for (String tag : tags) {
                     T instance = instanceMap.get(tag);
                     if (instance != null) {
@@ -62,7 +59,7 @@ public class SwakProxyFactoryBean<T> implements FactoryBean<T>, InitializingBean
 //                    resultList.add(result);
 //                }
 //                return method.invoke(targetList.get(targetList.size()-1),args);
-                return method.invoke(targetList.get(0),args);
+                return method.invoke(targetList.get(targetList.size()-1), args);
             }
         });
     }
@@ -80,14 +77,11 @@ public class SwakProxyFactoryBean<T> implements FactoryBean<T>, InitializingBean
     @Override
     public void afterPropertiesSet() throws Exception {
         Map<String, T> instanceMap = new HashMap<>();
-        this.instancesList = new ArrayList<>();
-        for (RuntimeBeanReference runtimeBeanReference : instancesReferenceList) {
-            String beanName = runtimeBeanReference.getBeanName();
-            T o = beanFactory.getBean(beanName, proxyClass);
-            instancesList.add(o);
-            SwakTag swakTag = o.getClass().getAnnotation(SwakTag.class);
+        for (String name : instancesList) {
+            T t = beanFactory.getBean(name, proxyClass);
+            SwakTag swakTag = t.getClass().getAnnotation(SwakTag.class);
             for (String tag : swakTag.tags()) {
-                instanceMap.put(tag, o);
+                instanceMap.put(tag, t);
             }
         }
         this.instanceMap = instanceMap;
@@ -102,19 +96,12 @@ public class SwakProxyFactoryBean<T> implements FactoryBean<T>, InitializingBean
         this.proxyClass = proxyClass;
     }
 
-    public List<RuntimeBeanReference> getInstancesReferenceList() {
-        return instancesReferenceList;
-    }
 
-    public void setInstancesReferenceList(List<RuntimeBeanReference> instancesReferenceList) {
-        this.instancesReferenceList = instancesReferenceList;
-    }
-
-    public List<T> getInstancesList() {
+    public List<String> getInstancesList() {
         return instancesList;
     }
 
-    public void setInstancesList(List<T> instancesList) {
+    public void setInstancesList(List<String> instancesList) {
         this.instancesList = instancesList;
     }
 
