@@ -9,7 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>spring_simple</artifactId>
+    <artifactId>spring-swak</artifactId>
+
 
     <dependencies>
 
@@ -68,6 +69,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

@@ -16,6 +16,7 @@
         <!--<module>spring-mvc</module>-->
         <module>spring-mybatis</module>
         <module>spring_simple</module>
+        <module>spring-swak</module>
     </modules>
 
     <properties>
